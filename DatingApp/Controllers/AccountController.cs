@@ -1,6 +1,7 @@
 ﻿using DatingApp.Data;
 using DatingApp.DTO;
 using DatingApp.Entities;
+using DatingApp.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,10 +10,10 @@ using System.Text;
 
 namespace DatingApp.Controllers
 {
-    public class AccountController(DataContext dataConext) : BaseApiController
+    public class AccountController(DataContext dataConext, ITokenService tokenService) : BaseApiController
     {
         [HttpPost("register")]
-        public async Task<ActionResult<AppUser>> Register(RegisterDto registerDto)
+        public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
         {
             if(await UserExists(registerDto.Username))
             {
@@ -30,11 +31,15 @@ namespace DatingApp.Controllers
             dataConext.Users.Add(user);
             await dataConext.SaveChangesAsync();
 
-            return user;
+            return new UserDto
+            {
+                userName = user.userName,
+                Token = tokenService.CreateToken(user)
+            };
         }
 
         [HttpPost("Login")]
-        public async Task<ActionResult<AppUser>> Loging(LoginDto loginDto)
+        public async Task<ActionResult<UserDto>> Loging(LoginDto loginDto)
         {
             var user = await dataConext.Users.FirstOrDefaultAsync(x =>
             x.userName.ToLower() == loginDto.Username.ToLower());
@@ -56,7 +61,11 @@ namespace DatingApp.Controllers
                 }
 
             }
-            return user;
+            return new UserDto
+            {
+                userName = user.userName,
+                Token = tokenService.CreateToken(user)
+            };
         }
 
         private async Task<bool> UserExists(string username)
