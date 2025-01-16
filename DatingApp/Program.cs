@@ -32,4 +32,18 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+using var scop = app.Services.CreateScope();
+var services = scop.ServiceProvider;
+try
+{
+    var dataContext = services.GetRequiredService<DataContext>();
+    await dataContext.Database.MigrateAsync();
+    await Seed.SeedUsers(dataContext);
+}
+catch (Exception ex)
+{
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    logger.LogError(ex, "An error occured during migration");
+}
+
 app.Run();

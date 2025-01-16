@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using DatingApp.Extensions;
+using System.ComponentModel.DataAnnotations;
 
 namespace DatingApp.Entities
 {
@@ -17,9 +18,14 @@ namespace DatingApp.Entities
         public required string Gender { get; set; }
         public string? Introduction { get; set; }
         public string? Interests { get; set; }
-        public required string? LookingFor { get; set; }
+        public required string LookingFor { get; set; }
         public required string City { get; set; }
         public required string Country { get; set; }
         public List<Photo> Photos { get; set; } = [];
+
+        public int GetAge()
+        {
+            return DateofBirth.CalculateAge();
+        }
     }
 }
